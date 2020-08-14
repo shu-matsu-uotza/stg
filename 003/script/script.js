@@ -31,6 +31,21 @@
    * @type {Image}
    */
   let image = null;
+  /**
+   * 実行開始時のタイムスタンプ
+   * @type {number}
+   */
+  let startTime = null;
+  /**
+   * viper のX座標
+   * @type {number}
+   */
+  let viperX = CANVAS_WIDTH / 2; // ここでは仮で canvas の中心位置
+  /**
+   * viper のY座標
+   * @type {number}
+   */
+  let viperY = CANVAS_HEIGHT / 2; // ここでは仮で canvas の中心位置
 
   /**
    * ページのロードが完了したときに発火する load イベント
@@ -49,6 +64,10 @@
       image = loadedImage;
       // 初期化処理を行う
       initialize();
+      // イベントを設定する
+      eventSetting();
+      // 実行開始時のタイムスタンプを取得する
+      startTime = Date.now();
       // 描画処理を行う
       render();
     });
@@ -64,13 +83,43 @@
   }
 
   /**
+   * イベントを設定する
+   */
+  function eventSetting(){
+    // キーの押下時に呼び出されるイベントリスナーを設定する
+    window.addEventListener('keydown', (event) => {
+      // 入力されたキーに応じて処理内容を変化させる
+      switch(event.key){
+        case 'ArrowLeft': // アローキーの左
+          viperX -= 10;
+          break;
+        case 'ArrowRight': // アローキーの右
+          viperX += 10;
+          break;
+        case 'ArrowUp': // アローキーの上
+          viperY -= 10;
+          break;
+        case 'ArrowDown': // アローキーの下
+          viperY += 10;
+          break;
+      }
+    }, false);
+  }
+
+  /**
    * 描画処理を行う
    */
   function render(){
     // 描画前に画面全体を不透明な明るいグレーで塗りつぶす
     util.drawRect(0, 0, canvas.width, canvas.height, '#eeeeee');
-    // 画像を描画する
-    ctx.drawImage(image, 100, 100);
+    // 現在までの経過時間を取得する（ミリ秒を秒に変換するため 1000 で除算）
+    let nowTime = (Date.now() - startTime) / 1000;
+
+    // 画像を描画する（現在の viper のいちに準じた位置に描画する）
+    ctx.drawImage(image, viperX, viperY);
+
+    // 恒常ループのために描画処理を再帰呼び出しする
+    requestAnimationFrame(render);
   }
 
   /**
