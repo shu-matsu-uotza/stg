@@ -37,25 +37,10 @@
    */
   let startTime = null;
   /**
-   * viper のX座標
-   * @type {number}
+   * 自機キャラクターのインスタンス
+   * @type {Viper}
    */
-  let viperX = CANVAS_WIDTH / 2; // ここでは仮で canvas の中心位置
-  /**
-   * viper のY座標
-   * @type {number}
-   */
-  let viperY = CANVAS_HEIGHT / 2; // ここでは仮で canvas の中心位置
-  /**
-   * viper が登場中かどうかを表すフラグ
-   * @type {boolean}
-   */
-  let isComing = false;
-  /**
-   * 登場演出を開始した際のタイムスタンプ
-   * @type {number}
-   */
-  let comingStart = null;
+  let viper = null;
 
   /**
    * ページのロードが完了したときに発火する load イベント
@@ -91,10 +76,15 @@
     canvas.width = CANVAS_WIDTH;
     canvas.height = CANVAS_HEIGHT;
 
-    // 登場シーンからスタートするための設定
-    isComing = true;          // 登場中フラグを立てる
-    comingStart = Date.now(); // 登場開始のタイムスタンプを取得する
-    viperY = CANVAS_HEIGHT;   // 画面外（下端の外）を初期位置にする
+    // 自機キャラクターを初期化する
+    viper = new Viper(ctx, 0, 0, 64, 64, image);
+    // 登場シーンからスタートするための設定を行う
+    viper.setComing(
+      CANVAS_WIDTH / 2,   // 登場演出時の開始 X座標
+      CANVAS_HEIGHT + 50,      // 登場演出時の開始 Y座標
+      CANVAS_WIDTH / 2,   // 登場演出を終了とする X座標
+      CANVAS_HEIGHT - 100 // 登場演出を終了とする Y座標
+    );
   }
 
   /**
@@ -104,20 +94,20 @@
     // キーの押下時に呼び出されるイベントリスナーを設定する
     window.addEventListener('keydown', (event) => {
       // 登場シーンなら何もしないで終了する
-      if(isComing === true){return;}
+      if(viper.isComing === true){return;}
       // 入力されたキーに応じて処理内容を変化させる
       switch(event.key){
         case 'ArrowLeft': // アローキーの左
-          viperX -= 10;
+          viper.position.x -= 10;
           break;
         case 'ArrowRight': // アローキーの右
-          viperX += 10;
+          viper.position.x += 10;
           break;
         case 'ArrowUp': // アローキーの上
-          viperY -= 10;
+          viper.position.y -= 10;
           break;
         case 'ArrowDown': // アローキーの下
-          viperY += 10;
+          viper.position.y += 10;
           break;
       }
     }, false);
@@ -134,26 +124,8 @@
     // 現在までの経過時間を取得する（ミリ秒を秒に変換するため 1000 で除算）
     let nowTime = (Date.now() - startTime) / 1000;
 
-    // 登場シーンの処理
-    if(isComing === true){
-      // 登場シーンが始まってからの経過時間
-      let justTime = Date.now();
-      let comingTime = (justTime - comingStart) / 1000;
-      // 登場中は時間が経つほど上に向かって進む
-      viperY = CANVAS_HEIGHT - comingTime * 50;
-      // 一定の位置まで移動したら登場シーンを終了する
-      if(viperY <= CANVAS_HEIGHT - 100){
-        isComing = false;               // 登場シーンフラグを下ろす
-        viperY = CANVAS_HEIGHT - 100;   // 行き過ぎの可能性もあるので位置を再設定
-      }
-      // justTime を 100 で割ったとき余りが 50 より小さくなる場合だけ半透明にする
-      if(justTime % 100 < 50){
-        ctx.globalAlpha = 0.5;
-      }
-    }
-    
-    // 画像を描画する（現在の viper のいちに準じた位置に描画する）
-    ctx.drawImage(image, viperX, viperY);
+    // 自機キャラクターの状態を更新する
+    viper.update();
 
     // 恒常ループのために描画処理を再帰呼び出しする
     requestAnimationFrame(render);
