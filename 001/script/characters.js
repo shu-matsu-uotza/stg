@@ -74,3 +74,38 @@ class Character {
     );
   }
 }
+
+/**
+ * viper クラス
+ */
+class Viper extends Character {
+  /**
+   * @constructor
+   * @param {CanvasRenderingContext2D} ctx - 描画などに利用する 2D コンテキスト
+   * @param {number} x - X座標
+   * @param {number} y - Y座標
+   * @param {Image} image - キャラクターの画像
+   */
+  constructor(ctx, x, y, image){
+    // Charactor クラスを継承しているので、まずは継承元となる
+    // Charactor クラスのコンストラクタを呼び出すことで初期化する
+    //  (super が継承元のコンストラクタの呼び出しに相当する)
+    super(ctx, x, y, 0, image);
+
+    /**
+     * viper が登場中かどうかを表すフラグ
+     * @type {boolean}
+     */
+    this.isComing = false;
+    /**
+     * 登場演出を開始した際のタイムスタンプ
+     * @type {number}
+     */
+    this.comingStart = null;
+    /**
+     * 登場演出を完了とする座標
+     * @type {Position}
+     */
+    this.comingEndPosition = null;
+  }
+}
