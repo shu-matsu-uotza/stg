@@ -209,3 +209,56 @@ class Viper extends Character {
     this.ctx.globalAlpha = 1.0;
   }
 }
+
+/**
+ * shot クラス
+ */
+class Shot extends Character {
+  /**
+   * @constructor
+   * @param {CanvasRenderingContext2D} ctx - 描画などに利用する 2D コンテキスト
+   * @param {number} x - X座標
+   * @param {number} y - Y座標
+   * @param {number} w - 幅
+   * @param {number} h - 高さ
+   * @param {Image} image - キャラクター用の画像パス
+   */
+  constructor(ctx, x, y, w, h, imagePath){
+    // 継承元の初期化
+    super(ctx, x, y, w, h, 0, imagePath);
+
+    /**
+     * 自身の移動スピード（update 一回あたりの移動量）
+     * @type {number}
+     */
+    this.speed = 7;
+  }
+
+  /**
+   * ショットを配置する
+   * @param {number} x - X座標
+   * @param {number} y - Y座標
+   */
+  set(x, y){
+    // 登場開始位置にショットを移動させる
+    this.position.set(x, y);
+    // ショットのライフを 0 より大きい値（生存の状態に設定する）
+    this.life = 1;
+  }
+
+  /**
+   * キャラクターの状態を更新し描画を行う
+   */
+  update(){
+    // もしショットのライフが 0 以下の場合はなにもしない
+    if(this.life <= 0){return;}
+    // もしショットが画面外へ移動していたらライフを 0（非生存の状態）に設定する
+    if(this.position.y + this.height < 0){
+      this.life = 0;
+    }
+    // ショットを上に向かって移動させる
+    this.position.y -= this.speed;
+    // ショットを描画する
+    this.draw();
+  }
+}
