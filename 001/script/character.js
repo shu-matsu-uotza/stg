@@ -215,10 +215,10 @@ class Viper extends Character {
       let ty = Math.min(Math.max(this.position.y, 0), canvasHeight);
       this.position.set(tx, ty);
 
-            // キーの押下状態を調べてショットを生成する
+      // キーの押下状態を調べてショットを生成する
       if(window.isKeyDown.key_z === true){
         // ショットの生存を確認し非生存のものがあれば生成する
-        for(let i = 0, i < this.shotArray.length; ++i){
+        for(let i = 0; i < this.shotArray.length; ++i){
           // 非生存かどうかを確認する
           if(this.shotArray[i].life <= 0){
             // 自機キャラクターの座標にショットを生成する
