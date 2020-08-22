@@ -287,6 +287,11 @@ class Shot extends Character {
      * @type {number}
      */
     this.speed = 7;
+    /**
+     * ショットの進行方向
+     * @type {Position}
+     */
+    this.vector = new Position(0.0, -1.0);
   }
 
   /**
@@ -302,6 +307,16 @@ class Shot extends Character {
   }
 
   /**
+   * ショットの進行方向を設定する
+   * @param {number} x - X方向の移動量
+   * @param {number} y - Y方向の移動量
+   */
+  setVector(x, y){
+    // 自身の vector プロパティに設定する
+    this.vector.set(x, y);
+  }
+
+  /**
    * キャラクターの状態を更新し描画を行う
    */
   update(){
@@ -311,8 +326,9 @@ class Shot extends Character {
     if(this.position.y + this.height < 0){
       this.life = 0;
     }
-    // ショットを上に向かって移動させる
-    this.position.y -= this.speed;
+    // ショットを進行方向に沿って移動させる
+    this.position.x += this.vector.x * this.speed;
+    this.position.y += this.vector.y * this.speed;
     // ショットを描画する
     this.draw();
   }
