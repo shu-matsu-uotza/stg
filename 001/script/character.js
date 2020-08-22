@@ -44,9 +44,9 @@ class Character {
    * @param {number} w - 幅
    * @param {number} h - 高さ
    * @param {number} life - キャラクターのライフ（生存フラグを兼ねる）
-   * @param {Image} image - キャラクターの画像
+   * @param {Image} imagePath - キャラクターの画像
    */
-  constructor(ctx, x, y, w, h, life, image){
+  constructor(ctx, x, y, w, h, life, imagePath){
     /**
      * @type {CanvasRenderingContext2D}
      */
@@ -68,9 +68,18 @@ class Character {
      */
     this.life = life;
     /**
+     * @type {boolean}
+     */
+    this.ready = false;
+    /**
      * @type {Image}
      */
-    this.image = image;
+    this.image = new Image();
+    this.image.addEventListener('load', () => {
+      // 画像のロードが完了したら準備完了フラグを立てる
+      this.ready = true;
+    }, false);
+    this.image.src = imagePath;
   }
 
   /**
@@ -104,9 +113,9 @@ class Viper extends Character {
    * @param {number} h - 高さ
    * @param {Image} image - キャラクターの画像
    */
-  constructor(ctx, x, y, w, h, image){
+  constructor(ctx, x, y, w, h, imagePath){
     // 継承元の初期化
-    super(ctx, x, y, w, h, 0, image);
+    super(ctx, x, y, w, h, 0, imagePath);
 
     /**
      * 自身の移動スピード（update 一回あたりの移動量）
