@@ -29,6 +29,11 @@
    * @type {number}
    */
   const SHOT_MAX_COUNT = 10;
+  /**
+   * 敵キャラクターのショットの最大個数
+   * @type {number}
+   */
+  const ENEMY_SHOT_MAX_COUNT = 50;
 
   /**
    * Canvas2D API をラップしたユーティリティクラス
@@ -75,6 +80,11 @@
    * @type {Array<Shot>}
    */
   let singleShotArray = [];
+  /**
+   * 敵キャラクターのショットのインスタンスを格納する配列
+   * @type {Array<Shot>}
+   */
+  let enemyShotArray = [];
 
   /**
    * ページのロードが完了したときに発火する load イベント
@@ -105,6 +115,13 @@
     // シーンを初期化する
     scene = new SceneManager();
 
+    // 自機のショットを初期化する
+    for(i = 0; i < SHOT_MAX_COUNT; ++i){
+      shotArray[i] = new Shot(ctx, 0, 0, 32, 32, './image/viper_shot.png');
+      singleShotArray[i * 2] = new Shot(ctx, 0, 0, 32, 32, './image/viper_single_shot.png');
+      singleShotArray[i * 2 + 1] = new Shot(ctx, 0, 0, 32, 32, './image/viper_single_shot.png');
+    }
+
     // 自機キャラクターを初期化する
     viper = new Viper(ctx, 0, 0, 64, 64, './image/viper.png');
     // 登場シーンからスタートするための設定を行う
@@ -114,21 +131,20 @@
       CANVAS_WIDTH / 2,   // 登場演出を終了とする X座標
       CANVAS_HEIGHT - 100 // 登場演出を終了とする Y座標
     );
+    // ショットを自機キャラクターに設定する
+    viper.setShotArray(shotArray, singleShotArray);
+
+    // 敵キャラクターのショットを初期化する
+    for(i = 0; i < ENEMY_SHOT_MAX_COUNT; ++i){
+      enemyShotArray[i] = new Shot(ctx, 0, 0, 32, 32, './image/enemy_shot.png');
+    }
 
     // 敵キャラクターを初期化する
     for(i = 0; i < ENEMY_MAX_COUNT; ++i){
       enemyArray[i] = new Enemy(ctx, 0, 0, 48, 48, './image/enemy_small.png');
+      // 敵キャラクターはすべて同じショットを共有するのでここで与えておく
+      enemyArray[i].setShotArray(enemyShotArray);
     }
-
-    // ショットを初期化する
-    for(i = 0; i < SHOT_MAX_COUNT; ++i){
-      shotArray[i] = new Shot(ctx, 0, 0, 32, 32, './image/viper_shot.png');
-      singleShotArray[i * 2] = new Shot(ctx, 0, 0, 32, 32, './image/viper_single_shot.png');
-      singleShotArray[i * 2 + 1] = new Shot(ctx, 0, 0, 32, 32, './image/viper_single_shot.png');
-    }
-
-    // ショットを自機キャラクターに設定する
-    viper.setShotArray(shotArray, singleShotArray);
   }
 
   /**
@@ -151,13 +167,17 @@
     singleShotArray.map((v) => {
       ready = ready && v.ready;
     });
+    // 同様に敵キャラクターのショットの準備状況も確認する
+    enemyShotArray.map((v) => {
+      ready = ready && v.ready;
+    });
 
     // すべての準備が完了したら次の処理に進む
     if(ready === true){
       // イベントを設定する
       eventSetting();
       // シーンを定義する
-      SceneSetting();
+      sceneSetting();
       // 実行開始時のタイムスタンプを取得する
       startTime = Date.now();
       // 描画処理を開始する
@@ -187,7 +207,7 @@
   /**
    * シーンを設定する
    */
-  function SceneSetting() {
+  function sceneSetting(){
     // イントロシーン
     scene.add('intro', (time) => {
       // 2 秒経過したらシーンを invade に変更する
@@ -197,18 +217,23 @@
     });
     // invade シーン
     scene.add('invade', (time) => {
-      // シーンのフレーム数が 0 のとき以外は即座に終了する
-      if(scene.frame !== 0){return;}
+      // シーンのフレーム数が 0 のときは敵キャラクターを配置する
+      if(scene.frame === 0){
       // ライフが 0 の状態の敵キャラクターが見つかったら配置する
-      for(let i = 0; i < ENEMY_MAX_COUNT; ++i){
-        if(enemyArray[i].life <= 0){
-          let e = enemyArray[i];
-          // 出現場所は X が画面中央、 Y が画面上端の外側に設定する
-          e.set(CANVAS_WIDTH / 2, -e.height);
-          // 進行方向は真下に向かうように設定する
-          e.setVector(0.0, 1.0);
-          break;
+        for(let i = 0; i < ENEMY_MAX_COUNT; ++i){
+          if(enemyArray[i].life <= 0){
+            let e = enemyArray[i];
+            // 出現場所は X が画面中央、 Y が画面上端の外側に設定する
+            e.set(CANVAS_WIDTH / 2, -e.height, 1, 'default');
+            // 進行方向は真下に向かうように設定する
+            e.setVector(0.0, 1.0);
+            break;
+          }
         }
+      }
+      // シーンのフレーム数が 100 になったときに再度 invade を設定する
+      if(scene.frame === 100){
+        scene.use('invade');
       }
     });
     // 一番最初のシーンには intro を設定する
@@ -244,6 +269,11 @@
 
     // シングルショットの状態を更新する
     singleShotArray.map((v) => {
+      v.update();
+    });
+
+    // 敵キャラクターのショットの状態を更新する
+    enemyShotArray.map((v) => {
       v.update();
     });
 
